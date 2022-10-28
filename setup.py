@@ -6,8 +6,8 @@ if __name__ == '__main__':
 
 	setup(
 		name='monitor',
-		version='0.1.0',
+		version='1.0.0',
 		description='Tool for services monitoring (pinging)',
-		python_requires='>=3.5',
+		python_requires='>=3.10',
 		packages=find_packages()
 	)

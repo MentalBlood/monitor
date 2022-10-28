@@ -1,8 +1,11 @@
-import httpx
 import asyncio
 import argparse
-import platform
-from typing import Callable
+
+from .Scanner import Scanner
+from .Notifier import Notifier
+from .AsyncClient import getAsyncClient
+
+from .loadTemplates import loadTemplates
 
 
 
@@ -29,49 +32,56 @@ parser.add_argument(
 	help='Ping interval in seconds',
 	required=False
 )
+parser.add_argument(
+	'--token',
+	'-t',
+	type=str,
+	help='Telegram bot token',
+	required=True
+)
+parser.add_argument(
+	'--chat_id',
+	'-c',
+	type=str,
+	help='Telegram chat id',
+	required=True
+)
+parser.add_argument(
+	'--templates_path',
+	'-T',
+	type=str,
+	help='Templates directory path',
+	required=True
+)
 
 args = parser.parse_args()
 
 
-client = httpx.AsyncClient(proxies=f'http://{args.proxy}')
 
-
-async def ping(
-	url: str,
-	interval: float,
-	callback: Callable = lambda url, result: print(url, result)
-) -> list | int | Exception:
-
-	while True:
-
-		result = None
-
-		try:
-
-			response = await client.get(url)
-
-			if response.status_code == 200:
-				result = response.json()
-			else:
-				result = response.status_code
-
-		except Exception as e:
-			result = e
-
-		callback(url, result)
-
-		await asyncio.sleep(interval)
-
-
-async def main(ips):
-
+async def main(scanners: list[Scanner]):
 	await asyncio.gather(*[
-		ping(f'http://{ip}/services', args.interval)
-		for ip in ips
+		s()
+		for s in scanners
 	])
 
 
-if platform.system() == 'Windows':
-	asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+loadTemplates(args.templates_path)
 
-asyncio.run(main(args.ip))
+
+asyncio.run(
+	main=main(
+		scanners=[
+			Scanner(
+				url=f'http://{ip}/services',
+				interval=args.interval,
+				notifier=Notifier(
+					token=args.token.encode(),
+					chat_id=args.chat_id.encode(),
+					client=getAsyncClient(args.proxy)
+				),
+				client=getAsyncClient(args.proxy)
+			)
+			for ip in args.ip
+		]
+	)
+)

@@ -1,0 +1,3 @@
+Exception occurred when pinging:
+
+<!-- (param)text -->

@@ -1,0 +1,4 @@
+Something wrong with COD module at URL <!-- (param)url -->:
+
+<!-- (optional)(ref)BadReply -->
+<!-- (optional)(ref)Exception -->
