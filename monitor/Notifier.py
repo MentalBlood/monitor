@@ -17,22 +17,17 @@ class Notifier:
 
 	async def __call__(self, url: str, result: list | int | Exception) -> None:
 
+		message = b''
+
 		if type(result) == list:
 
-			if url in self._last_error_result:
+			if url not in self._last_error_result:
+				return
 
-				del self._last_error_result[url]
-
-				response = await self.client.get(
-					Template('RequestUrl')({
-						'token': self.token,
-						'chat_id': self.chat_id,
-						'MessageOk': {
-							'url': url.encode()
-						}
-					}).decode()
-				)
-				print(f'{url} is OK -> {response}')
+			del self._last_error_result[url]
+			message = Template('MessageOk')({
+				'url': url.encode()
+			})
 
 		else:
 
@@ -41,28 +36,23 @@ class Notifier:
 					return
 
 			self._last_error_result[url] = result
-
-			message_additional_args = {}
-			if type(result) == int:
-				message_additional_args = {
+			message = Template('MessageError')({
+				int: {
 					'BadReply': {
 						'status_code': str(result).encode()
 					}
-				}
-			elif type(result) == Exception:
-				message_additional_args = {
+				},
+				Exception: {
 					'Exception': {
 						'text': str(result).encode()
 					}
 				}
+			}[type(result)])
 
-			response = await self.client.get(
-				Template('RequestUrl')({
-					'token': self.token,
-					'chat_id': self.chat_id,
-					'MessageError': {
-						'url': url.encode(),
-					} | message_additional_args
-				}).decode()
-			)
-			print(f'{url} is NOT OK -> {response}')
+		await self.client.get(
+			Template('RequestUrl')({
+				'token': self.token,
+				'chat_id': self.chat_id,
+				'Message': message
+			}).decode()
+		)

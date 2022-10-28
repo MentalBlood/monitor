@@ -1,3 +1,2 @@
 https://api.telegram.org/bot<!-- (param)token -->/sendMessage?chat_id=<!-- (param)chat_id -->&parse_mode=Markdown&text=
-<!-- (optional)(ref)MessageError -->
-<!-- (optional)(ref)MessageOk -->
+<!-- (param)Message -->
