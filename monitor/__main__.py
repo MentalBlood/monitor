@@ -6,6 +6,7 @@ from .Notifier import Notifier
 from .AsyncClient import getAsyncClient
 
 from .loadTemplates import loadTemplates
+from .MessageComposer import MessageComposer
 
 
 
@@ -77,7 +78,8 @@ asyncio.run(
 				notifier=Notifier(
 					token=args.token.encode(),
 					chat_id=args.chat_id.encode(),
-					client=getAsyncClient(args.proxy)
+					client=getAsyncClient(args.proxy),
+					message_composer=MessageComposer()
 				),
 				client=getAsyncClient(args.proxy)
 			)

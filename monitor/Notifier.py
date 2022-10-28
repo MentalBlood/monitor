@@ -2,6 +2,7 @@ import dataclasses
 from drunk_snail import Template
 
 from .AsyncClient import AsyncClient
+from .MessageComposer import MessageComposer
 
 
 
@@ -12,12 +13,11 @@ class Notifier:
 	chat_id: bytes
 
 	client: AsyncClient
+	message_composer: MessageComposer
 
 	_last_error_result: dict[str, list | int | Exception] = dataclasses.field(default_factory=dict)
 
 	async def __call__(self, url: str, result: list | int | Exception) -> None:
-
-		message = b''
 
 		if type(result) == list:
 
@@ -25,9 +25,6 @@ class Notifier:
 				return
 
 			del self._last_error_result[url]
-			message = Template('MessageOk')({
-				'url': url.encode()
-			})
 
 		else:
 
@@ -36,23 +33,11 @@ class Notifier:
 					return
 
 			self._last_error_result[url] = result
-			message = Template('MessageError')({
-				int: {
-					'BadReply': {
-						'status_code': str(result).encode()
-					}
-				},
-				Exception: {
-					'Exception': {
-						'text': str(result).encode()
-					}
-				}
-			}[type(result)])
 
 		await self.client.get(
 			Template('RequestUrl')({
 				'token': self.token,
 				'chat_id': self.chat_id,
-				'Message': message
+				'Message': self.message_composer(url, result)
 			}).decode()
 		)
