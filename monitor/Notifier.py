@@ -15,6 +15,10 @@ class Notifier(abc.ABC):
 
 	aggregator: Aggregator
 
-	@abc.abstractmethod
 	async def __call__(self, url: str, result: list | int | Exception) -> None:
+		if self.aggregator(url, result):
+			return await self._call(url, result)
+
+	@abc.abstractmethod
+	async def _call(self, url: str, result: list | int | Exception) -> None:
 		pass
