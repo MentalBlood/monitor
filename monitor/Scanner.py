@@ -12,7 +12,7 @@ class Scanner:
 
 	url: str
 	interval: float
-	notifier: Notifier
+	notifiers: list[Notifier]
 
 	client: AsyncClient
 
@@ -34,6 +34,7 @@ class Scanner:
 			except Exception as e:
 				result = e
 
-			await self.notifier(self.url, result)
+			for n in self.notifiers:
+				await n(self.url, result)
 
 			await asyncio.sleep(self.interval)

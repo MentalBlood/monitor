@@ -1,7 +1,7 @@
 import dataclasses
 from drunk_snail import Template
 
-from .Notifier import Notifier
+from ..Notifier import Notifier
 
 
 
