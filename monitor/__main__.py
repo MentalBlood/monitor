@@ -2,8 +2,9 @@ import asyncio
 import argparse
 
 from .Scanner import Scanner
-from .Notifier import Notifier
-from .AsyncClient import getAsyncClient
+from .Aggregator import Aggregator
+from .AsyncClient import AsyncClient
+from .TelegramNotifier import TelegramNotifier
 
 from .loadTemplates import loadTemplates
 from .MessageComposer import MessageComposer
@@ -75,13 +76,14 @@ asyncio.run(
 			Scanner(
 				url=f'http://{ip}/services',
 				interval=args.interval,
-				notifier=Notifier(
+				notifier=TelegramNotifier(
+					client=AsyncClient(args.proxy),
+					message_composer=MessageComposer(),
+					aggregator=Aggregator(),
 					token=args.token.encode(),
 					chat_id=args.chat_id.encode(),
-					client=getAsyncClient(args.proxy),
-					message_composer=MessageComposer()
 				),
-				client=getAsyncClient(args.proxy)
+				client=AsyncClient(args.proxy)
 			)
 			for ip in args.ip
 		]
