@@ -71,33 +71,38 @@ async def main(scanners: list[Scanner]):
 loadTemplates(args.templates_path)
 
 
-asyncio.run(
-	main=main(
-		scanners=[
-			Scanner(
-				url=a,
-				interval=args.interval,
-				notifiers=[
-					TelegramNotifier(
-						client=AsyncClient(args.proxy),
-						message_composer=MessageComposer(),
-						aggregator=Aggregator(
-							validator=lambda r: (type(r) == list) or (r == 403)
+try:
+
+	asyncio.run(
+		main=main(
+			scanners=[
+				Scanner(
+					url=a,
+					interval=args.interval,
+					notifiers=[
+						TelegramNotifier(
+							client=AsyncClient(args.proxy),
+							message_composer=MessageComposer(),
+							aggregator=Aggregator(
+								validator=lambda r: (type(r) == list) or (r == 403)
+							),
+							token=args.token.encode(),
+							chat_id=args.chat_id.encode(),
 						),
-						token=args.token.encode(),
-						chat_id=args.chat_id.encode(),
-					),
-					WindowsNotifier(
-						client=AsyncClient(args.proxy),
-						message_composer=MessageComposer(),
-						aggregator=Aggregator(
-							validator=lambda r: (type(r) == list) or (r == 403)
+						WindowsNotifier(
+							client=AsyncClient(args.proxy),
+							message_composer=MessageComposer(),
+							aggregator=Aggregator(
+								validator=lambda r: (type(r) == list) or (r == 403)
+							)
 						)
-					)
-				],
-				client=AsyncClient(args.proxy)
-			)
-			for a in args.address
-		]
+					],
+					client=AsyncClient(args.proxy)
+				)
+				for a in args.address
+			]
+		)
 	)
-)
+
+except KeyboardInterrupt:
+	exit()
