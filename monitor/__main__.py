@@ -15,9 +15,9 @@ from .MessageComposer import MessageComposer
 parser = argparse.ArgumentParser(description='Service for services monitoring')
 
 parser.add_argument(
-	'ip',
+	'address',
 	nargs='+',
-	help='IP addresses of services to ping'
+	help='Addresses to ping'
 )
 parser.add_argument(
 	'-p',
@@ -75,7 +75,7 @@ asyncio.run(
 	main=main(
 		scanners=[
 			Scanner(
-				url=f'http://{ip}/services',
+				url=a,
 				interval=args.interval,
 				notifiers=[
 					TelegramNotifier(
@@ -97,7 +97,7 @@ asyncio.run(
 				],
 				client=AsyncClient(args.proxy)
 			)
-			for ip in args.ip
+			for a in args.address
 		]
 	)
 )
