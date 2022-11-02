@@ -2,6 +2,7 @@ import asyncio
 import argparse
 
 from .Scanner import Scanner
+from .Notifier import Notifier
 from .Aggregator import Aggregator
 from .AsyncClient import AsyncClient
 from .notifiers.WindowsNotifier import WindowsNotifier
@@ -36,20 +37,6 @@ parser.add_argument(
 	required=False
 )
 parser.add_argument(
-	'--token',
-	'-t',
-	type=str,
-	help='Telegram bot token',
-	required=True
-)
-parser.add_argument(
-	'--chat_id',
-	'-c',
-	type=str,
-	help='Telegram chat id',
-	required=True
-)
-parser.add_argument(
 	'--templates_path',
 	'-T',
 	type=str,
@@ -57,8 +44,24 @@ parser.add_argument(
 	required=True
 )
 
-args = parser.parse_args()
+parser.add_argument(
+	'--token',
+	'-t',
+	type=str,
+	default=None,
+	help='Telegram bot token',
+	required=False
+)
+parser.add_argument(
+	'--chat_id',
+	'-c',
+	type=str,
+	default=None,
+	help='Telegram chat id',
+	required=False
+)
 
+args = parser.parse_args()
 
 
 async def main(scanners: list[Scanner]):
@@ -70,6 +73,28 @@ async def main(scanners: list[Scanner]):
 
 loadTemplates(args.templates_path)
 
+notifiers: list[Notifier] = [
+	WindowsNotifier(
+		client=AsyncClient(args.proxy),
+		message_composer=MessageComposer(),
+		aggregator=Aggregator(
+			validator=lambda r: (type(r) == list) or (r == 403)
+		)
+	)
+]
+if args.token and args.chat_id:
+	notifiers.append(
+		TelegramNotifier(
+			client=AsyncClient(args.proxy),
+			message_composer=MessageComposer(),
+			aggregator=Aggregator(
+				validator=lambda r: (type(r) == list) or (r == 403)
+			),
+			token=args.token.encode(),
+			chat_id=args.chat_id.encode(),
+		)
+	)
+
 
 try:
 
@@ -79,24 +104,7 @@ try:
 				Scanner(
 					url=a,
 					interval=args.interval,
-					notifiers=[
-						TelegramNotifier(
-							client=AsyncClient(args.proxy),
-							message_composer=MessageComposer(),
-							aggregator=Aggregator(
-								validator=lambda r: (type(r) == list) or (r == 403)
-							),
-							token=args.token.encode(),
-							chat_id=args.chat_id.encode(),
-						),
-						WindowsNotifier(
-							client=AsyncClient(args.proxy),
-							message_composer=MessageComposer(),
-							aggregator=Aggregator(
-								validator=lambda r: (type(r) == list) or (r == 403)
-							)
-						)
-					],
+					notifiers=notifiers,
 					client=AsyncClient(args.proxy)
 				)
 				for a in args.address
