@@ -81,14 +81,18 @@ asyncio.run(
 					TelegramNotifier(
 						client=AsyncClient(args.proxy),
 						message_composer=MessageComposer(),
-						aggregator=Aggregator(),
+						aggregator=Aggregator(
+							validator=lambda r: (type(r) == list) or (r == 403)
+						),
 						token=args.token.encode(),
 						chat_id=args.chat_id.encode(),
 					),
 					WindowsNotifier(
 						client=AsyncClient(args.proxy),
 						message_composer=MessageComposer(),
-						aggregator=Aggregator()
+						aggregator=Aggregator(
+							validator=lambda r: (type(r) == list) or (r == 403)
+						)
 					)
 				],
 				client=AsyncClient(args.proxy)
