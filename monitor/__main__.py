@@ -1,3 +1,4 @@
+import os
 import asyncio
 import argparse
 
@@ -40,8 +41,9 @@ parser.add_argument(
 	'--templates_path',
 	'-T',
 	type=str,
+	default=None,
 	help='Templates directory path',
-	required=True
+	required=False
 )
 
 parser.add_argument(
@@ -71,7 +73,15 @@ async def main(scanners: list[Scanner]):
 	])
 
 
-loadTemplates(args.templates_path)
+loadTemplates(
+	args.templates_path or
+	os.path.join(
+		os.path.dirname(
+			os.path.realpath(__file__)
+		),
+		'templates'
+	)
+)
 
 notifiers: list[Notifier] = [
 	WindowsNotifier(

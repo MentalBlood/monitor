@@ -1,3 +1,4 @@
+import glob
 from setuptools import setup, find_packages
 
 
@@ -9,5 +10,7 @@ if __name__ == '__main__':
 		version='1.0.0',
 		description='Tool for services monitoring (pinging)',
 		python_requires='>=3.10',
-		packages=find_packages()
+		packages=find_packages(),
+		package_data={'templates': glob.glob('monitor/templates/*')},
+		include_package_data=True
 	)
