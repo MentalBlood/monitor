@@ -1,6 +1,5 @@
 import asyncio
 import dataclasses
-from typing import Callable
 
 from .Notifier import Notifier
 from .AsyncClient import AsyncClient
