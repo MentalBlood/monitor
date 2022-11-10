@@ -14,16 +14,17 @@ class MessageComposer:
 			})
 
 		else:
-			return Template('MessageError')({
-				list: {},
-				int: {
+			if type(result) == list:
+				pass
+			elif type(result) == int:
+				return Template('MessageError')({
 					'BadReply': {
 						'status_code': str(result).encode()
 					}
-				},
-				Exception: {
+				})
+			else:
+				return Template('MessageError')({
 					'Exception': {
 						'text': str(result).encode()
 					}
-				}
-			}[type(result)])
+				})
